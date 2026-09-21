@@ -1,0 +1,16 @@
+interface:
+  display_name: "Figma 还原度视觉检查"
+  short_description: "用 pixelmatch 对比页面与 Figma 设计稿还原度"
+  default_prompt: "使用 $pixelmatch-check 检查页面与 Figma 设计稿的还原度：先确认平台，获取 Figma 基准图与实际截图，运行 pixelmatch 生成差异图，Web 端按差异迭代修复样式/布局。"
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "figma"
+      description: "Figma MCP 设计稿提取工具"
+      transport: "streamable_http"
+      url: "https://mcp.figma.com/mcp"
+
+
+policy:
+  allow_implicit_invocation: false # 仅在被明确呼叫时才运行
