@@ -1,15 +1,29 @@
-# Today Weekly Release Company Skills
+# Today Weekly Release Company AI Dev Kit
 
-This repository contains shared Agent Skills for Codex.
+Shared AI-assisted development workflows and team onboarding resources.
 
-## Skills
+## Start here
 
-- `pixelmatch-check`: compares a web implementation with a Figma design at the pixel level.
-- `code-review-excellence`: provides a structured code-review workflow.
-- `playwright-cli`: automates browser interactions and Playwright-based testing.
+Read [INSTALL.md](INSTALL.md) to configure this repository for Codex.
 
-## Use in Codex
+## Repository layout
 
-The skills live in `.agents/skills/`, the repository-level location that Codex scans automatically. Each skill directory contains its required `SKILL.md` and any supporting references or metadata.
+```text
+.
+├── README.md
+├── INSTALL.md
+├── .agents/
+│   └── skills/
+│       ├── code-review-excellence/
+│       ├── pixelmatch-check/
+│       └── playwright-cli/
+└── docs/
+```
 
-Open this repository in Codex, then invoke a skill by name or let Codex select it based on the skill description.
+## Shared skills
+
+- `code-review-excellence`: structured code-review workflow.
+- `pixelmatch-check`: pixel-level comparison between a web implementation and a Figma design.
+- `playwright-cli`: browser automation and Playwright-based testing.
+
+Codex discovers the repository-level skills in `.agents/skills/` when this repository is open.
