@@ -17,10 +17,11 @@ jobs:
 
   powershell:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        shell: [pwsh, powershell]
     steps:
       - uses: actions/checkout@v4
-      - shell: ${{ matrix.shell }}
+      - name: PowerShell 7
+        shell: pwsh
+        run: ./tests/scripts_test.ps1
+      - name: Windows PowerShell 5.1
+        shell: powershell
         run: ./tests/scripts_test.ps1
