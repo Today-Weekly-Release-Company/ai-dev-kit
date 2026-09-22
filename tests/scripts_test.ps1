@@ -5,14 +5,15 @@ $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("ai-dev-kit-test-{0}" -
 $codexDir = Join-Path $testRoot '.codex'
 $stubDir = Join-Path $testRoot 'bin'
 $originalCodexHome = $env:CODEX_HOME
-$originalPath = $env:Path
+$originalPath = $env:PATH
 $utf8 = [System.Text.UTF8Encoding]::new($false)
+$isNativeWindows = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
 
 try {
     [System.IO.Directory]::CreateDirectory($codexDir) | Out-Null
     [System.IO.Directory]::CreateDirectory($stubDir) | Out-Null
     $env:CODEX_HOME = $codexDir
-    $env:Path = "$stubDir;$originalPath"
+    $env:PATH = "$stubDir$([System.IO.Path]::PathSeparator)$originalPath"
 
     $agentsPath = Join-Path $codexDir 'AGENTS.md'
     $originalAgents = @'
@@ -42,14 +43,29 @@ try {
         throw '全局 AGENTS.md 同步未通过幂等与保留检查。'
     }
 
-    [System.IO.File]::WriteAllText((Join-Path $stubDir 'node.cmd'), "@echo off`r`necho v22.20.0`r`n", $utf8)
-    [System.IO.File]::WriteAllText((Join-Path $stubDir 'npm.cmd'), "@echo off`r`nexit /b 0`r`n", $utf8)
-    [System.IO.File]::WriteAllText((Join-Path $stubDir 'rtk.cmd'), "@echo off`r`nif `"%1`"==`"--version`" echo rtk 0.49.0`r`nexit /b 0`r`n", $utf8)
-    [System.IO.File]::WriteAllText((Join-Path $stubDir 'zg.cmd'), "@echo off`r`nif `"%1`"==`"--version`" echo 0.2.2`r`nexit /b 0`r`n", $utf8)
+    if ($isNativeWindows) {
+        [System.IO.File]::WriteAllText((Join-Path $stubDir 'node.cmd'), "@echo off`r`necho v22.20.0`r`n", $utf8)
+        [System.IO.File]::WriteAllText((Join-Path $stubDir 'npm.cmd'), "@echo off`r`nexit /b 0`r`n", $utf8)
+        [System.IO.File]::WriteAllText((Join-Path $stubDir 'rtk.cmd'), "@echo off`r`nif `"%1`"==`"--version`" echo rtk 0.49.0`r`nexit /b 0`r`n", $utf8)
+        [System.IO.File]::WriteAllText((Join-Path $stubDir 'zg.cmd'), "@echo off`r`nif `"%1`"==`"--version`" echo 0.2.2`r`nexit /b 0`r`n", $utf8)
+    } else {
+        foreach ($name in @('node', 'rtk', 'zg')) {
+            $body = switch ($name) {
+                'node' { 'echo v22.20.0' }
+                'rtk' { 'if [ "$1" = "--version" ]; then echo rtk 0.49.0; fi' }
+                'zg' { 'if [ "$1" = "--version" ]; then echo 0.2.2; fi' }
+            }
+            $path = Join-Path $stubDir $name
+            [System.IO.File]::WriteAllText($path, "#!/bin/sh`n$body`nexit 0`n", $utf8)
+            & chmod +x $path
+        }
+    }
     [System.IO.File]::WriteAllText((Join-Path $codexDir 'config.toml'), "[mcp_servers.zvec_grep]`ncommand = 'zg'`n", $utf8)
 
-    & (Join-Path $projectDir 'scripts/verify.ps1') | Out-Null
-    & (Join-Path $projectDir 'install.ps1') | Out-Null
+    & (Join-Path $projectDir 'scripts/verify.ps1')
+    if ($isNativeWindows) {
+        & (Join-Path $projectDir 'install.ps1') | Out-Null
+    }
 
     $brokenDir = Join-Path $testRoot 'broken'
     [System.IO.Directory]::CreateDirectory($brokenDir) | Out-Null
@@ -74,7 +90,7 @@ try {
     Write-Output 'scripts_test.ps1: passed'
 } finally {
     $env:CODEX_HOME = $originalCodexHome
-    $env:Path = $originalPath
+    $env:PATH = $originalPath
     if (Test-Path -LiteralPath $testRoot) {
         Remove-Item -LiteralPath $testRoot -Recurse -Force
     }
