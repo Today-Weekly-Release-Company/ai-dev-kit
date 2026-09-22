@@ -12,6 +12,11 @@ fail() {
   exit 1
 }
 
+case "$(uname -s)" in
+  Darwin|Linux) ;;
+  *) fail "此脚本适用于 macOS、Linux 或 WSL；Windows 原生环境请运行 install.ps1" ;;
+esac
+
 for command_name in curl node npm; do
   command -v "$command_name" >/dev/null 2>&1 || fail "缺少命令：$command_name"
 done

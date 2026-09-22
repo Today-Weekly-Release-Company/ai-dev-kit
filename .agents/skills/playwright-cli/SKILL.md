@@ -11,10 +11,14 @@ allowed-tools: Bash(playwright-cli:*) Bash(npx:*) Bash(npm:*)
 command -v playwright-cli && playwright-cli --help
 ```
 
+Windows 原生 PowerShell 用 `Get-Command playwright-cli.cmd -ErrorAction SilentlyContinue` 检测，运行命令时使用 `playwright-cli.cmd`。
+
 2. If playwright-cli is missing, ask the user to run:
 ```bash
 npm install -g @playwright/cli@latest
 ```
+
+Windows 原生 PowerShell 使用 `npm.cmd install -g @playwright/cli@latest`，避免命中 PowerShell 的 `.ps1` 命令包装。
 
 # Browser Automation with playwright-cli
 

@@ -17,20 +17,30 @@ https://github.com/Today-Weekly-Release-Company/ai-dev-kit
 2. 保留用户已有配置，只更新仓库明确声明的托管区块。
 3. 涉及覆盖冲突配置、移除同名工具、修改 Shell 启动文件或账号授权时，先说明影响并征求确认。
 4. 优先使用各工具的官方安装命令，根据当前操作系统和版本管理器选择最短路径。
-5. 完成后运行 scripts/verify.sh，报告每一项验证结果，并清理安装过程中创建的临时目录。
+5. 区分 Windows 原生 PowerShell 与 WSL/macOS/Linux，运行对应的 scripts/verify.ps1 或 scripts/verify.sh；报告验证结果并清理临时目录。
 ```
 
 Codex 会按照 [INSTALL.md](INSTALL.md) 检查环境并执行安装，适合首次使用和已有配置复杂的电脑。
 
 ## 可选：无人值守安装
 
-`install.sh` 适用于已经具备 Node.js 22、npm 和标准 PATH 的 macOS/Linux 环境：
+macOS、Linux、WSL 可在满足 Node.js 22 和 npm 的环境中运行：
 
 ```bash
 git clone https://github.com/Today-Weekly-Release-Company/ai-dev-kit.git
 cd ai-dev-kit
 ./install.sh
 ```
+
+Windows 原生 PowerShell 使用对应入口：
+
+```powershell
+git clone https://github.com/Today-Weekly-Release-Company/ai-dev-kit.git
+Set-Location ai-dev-kit
+.\install.ps1
+```
+
+PowerShell 脚本受系统执行策略管理；遇到限制时按 [INSTALL.md](INSTALL.md) 处理。Windows 原生与 WSL 各自拥有独立的 Codex 主目录，安装时以 Codex 实际运行环境为准。
 
 遇到依赖缺失或配置冲突时，使用上面的文本指令交给 Codex 处理。
 
@@ -48,13 +58,17 @@ cd ai-dev-kit
 ├── README.md
 ├── INSTALL.md
 ├── install.sh
+├── install.ps1
 ├── templates/
 │   └── AGENTS.md
 ├── scripts/
 │   ├── sync-agents.sh
-│   └── verify.sh
+│   ├── sync-agents.ps1
+│   ├── verify.sh
+│   └── verify.ps1
 ├── tests/
-│   └── scripts_test.sh
+│   ├── scripts_test.sh
+│   └── scripts_test.ps1
 └── .agents/
     └── skills/
 ```

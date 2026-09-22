@@ -30,6 +30,7 @@ description: |
 
 2. **npx 可用**：运行 `npx --version`
    - 失败提示：`npx 不可用，请确认 npm 已正确安装`
+   - Windows 原生 PowerShell 使用 `npx.cmd --version`；后续 `npx pixelmatch` 同理改为 `npx.cmd pixelmatch`。
 
 3. **Figma MCP 可用**：第 3 步调用 Figma MCP 获取截图；调用失败则提示用户检查 Figma MCP 连接和 Figma 文件权限。
 
@@ -43,6 +44,8 @@ description: |
 ```bash
 mkdir -p pixelmatch-checks/YYYY-MM-DD-<页面>
 ```
+
+Windows 原生 PowerShell 使用 `New-Item -ItemType Directory -Force -Path 'pixelmatch-checks/YYYY-MM-DD-<页面>'`。
 
 - 日期：当前日期（格式 YYYY-MM-DD）
 - 节点名：从 Figma URL 的 node-id 提取，sanitize 为合法目录名（特殊字符替换为 `-`，转小写）
@@ -171,6 +174,8 @@ npx pixelmatch \
   <OUT_DIR>/diff-output.png \
   0.1
 ```
+
+Windows 原生 PowerShell 使用单行 `npx.cmd pixelmatch <OUT_DIR>/figma-baseline.png <OUT_DIR>/actual-screenshot.png <OUT_DIR>/diff-output.png 0.1`，并将示例占位符替换为实际路径。
 
 - stdout 输出 diff 像素数（整数）
 - 根据设计稿尺寸计算差异百分比：`diffPercent = diffPixels / (width × height) × 100`

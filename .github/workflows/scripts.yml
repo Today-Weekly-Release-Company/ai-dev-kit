@@ -1,0 +1,26 @@
+name: Script checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for script in install.sh scripts/sync-agents.sh scripts/verify.sh tests/scripts_test.sh; do
+            sh -n "$script"
+          done
+          ./tests/scripts_test.sh
+
+  powershell:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        shell: [pwsh, powershell]
+    steps:
+      - uses: actions/checkout@v4
+      - shell: ${{ matrix.shell }}
+        run: ./tests/scripts_test.ps1

@@ -103,4 +103,15 @@ if HOME="$TEST_HOME" CODEX_HOME="$TEST_HOME/.codex" PATH="$STUB_BIN:/usr/bin:/bi
   exit 1
 fi
 
+cat > "$TEST_HOME/.codex/config.toml" <<'EOF'
+[mcp_servers.zvec_grep]
+command = "zg"
+EOF
+printf '覆盖规则\n' > "$TEST_HOME/.codex/AGENTS.override.md"
+if HOME="$TEST_HOME" CODEX_HOME="$TEST_HOME/.codex" PATH="$STUB_BIN:/usr/bin:/bin" \
+  "$PROJECT_DIR/scripts/verify.sh" >/dev/null; then
+  printf 'verify 应在全局规则被 override 遮蔽时失败\n' >&2
+  exit 1
+fi
+
 printf 'scripts_test: passed\n'

@@ -2,6 +2,8 @@
 
 本文档供 Codex 或其他具备终端能力的 AI Agent 执行。目标是根据用户当前环境完成安装，同时保留已有配置。
 
+支持 macOS、Linux、Windows 原生 PowerShell 和 WSL。先判断 Codex 的实际运行环境：Windows 原生使用 `.ps1`；WSL 使用 `.sh`。两者默认的 Codex 主目录分别是 `%USERPROFILE%\.codex` 和 WSL 用户目录下的 `~/.codex`，应配置与目标 Codex 会话相同的环境。
+
 ## 目标状态
 
 完成后应满足：
@@ -23,7 +25,7 @@
 
 ## 1. 准备仓库
 
-当前工作区已经是本仓库时，直接进入仓库根目录。其他情况下，将仓库克隆到临时目录：
+当前工作区已经是本仓库时，直接进入仓库根目录。其他情况下，先创建临时目录，再将仓库克隆到该目录：
 
 ```bash
 git clone --depth 1 https://github.com/Today-Weekly-Release-Company/ai-dev-kit.git
@@ -36,6 +38,8 @@ cd ai-dev-kit
 
 收集以下信息并据此决定安装路径：
 
+macOS、Linux、WSL：
+
 ```bash
 uname -s
 uname -m
@@ -47,10 +51,23 @@ command -v rtk && rtk gain
 command -v zg && zg --version
 ```
 
+Windows 原生 PowerShell：
+
+```powershell
+$PSVersionTable.PSVersion
+Get-Command node,npm.cmd,rtk,zg.cmd -ErrorAction SilentlyContinue
+node --version
+npm.cmd --version
+rtk gain
+zg.cmd --version
+```
+
+单个命令缺失时记录结果并继续检查其余项目；检查 Windows 当前的 PowerShell 执行策略和可用的 `winget`。
+
 同时检查：
 
-- `${CODEX_HOME:-$HOME/.codex}/AGENTS.md`
-- `${CODEX_HOME:-$HOME/.codex}/config.toml`
+- Codex 主目录中的 `AGENTS.md`、`AGENTS.override.md` 和 `config.toml`；
+- `CODEX_HOME` 环境变量；
 - 当前 Shell 的 PATH 配置
 
 向用户简短说明即将新增或更新的内容，再进入写操作。
@@ -63,6 +80,12 @@ command -v zg && zg --version
 ./scripts/sync-agents.sh
 ```
 
+Windows 原生 PowerShell：
+
+```powershell
+.\scripts\sync-agents.ps1
+```
+
 脚本只维护以下标记之间的内容：
 
 ```text
@@ -70,7 +93,7 @@ command -v zg && zg --version
 <!-- AI_DEV_KIT_END -->
 ```
 
-它会保留标记外内容，并在发生变更前生成 `AGENTS.md.ai-dev-kit.bak`。遇到单边缺失、重复或顺序错误的标记时，先检查文件并征求用户处理意见。
+脚本会保留标记外内容，并在发生变更前生成 `AGENTS.md.ai-dev-kit.bak`。遇到单边缺失、重复或顺序错误的标记时，先检查文件并征求用户处理意见。若存在非空的 `AGENTS.override.md`，Codex 将优先读取它；需先和用户确定全局规则的生效方式。
 
 ## 4. 安装 RTK
 
@@ -86,6 +109,14 @@ macOS/Linux 官方安装命令：
 curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
 ```
 
+Windows 原生 PowerShell 使用官方 winget 包：
+
+```powershell
+winget install --id rtk-ai.rtk --exact
+```
+
+安装后如当前终端尚未识别 `rtk`，重新打开 PowerShell 再继续。WSL 沿用 Linux 安装命令。
+
 确认 `rtk` 所在目录已经进入 PATH，再配置 Codex：
 
 ```bash
@@ -94,13 +125,13 @@ rtk --version
 rtk gain
 ```
 
-PATH 缺失时，根据当前 Shell 选择对应启动文件，展示将要追加的内容并取得用户确认。
+PATH 缺失时，根据当前 Shell 配置方式选择修复方法，展示变更并取得用户确认。Windows 优先由 winget 管理 PATH。
 
 ## 5. 安装 zvec-grep 与 Codex MCP
 
 zvec-grep 需要 Node.js 22 或更高版本。
 
-现有 Node.js 版本符合要求时直接复用。版本较低或缺失时，优先使用用户已经采用的版本管理器，例如 `mise`、`nvm`、`fnm`、`asdf` 或 Homebrew。安装完成后重新确认 `node --version` 和 `npm --version`。
+现有 Node.js 版本符合要求时直接复用。版本较低或缺失时，优先使用用户已经采用的版本管理器。Windows 原生可使用 `winget install --id OpenJS.NodeJS.LTS --exact`；macOS/Linux/WSL 可复用 `mise`、`nvm`、`fnm`、`asdf` 或系统包管理器。安装完成后重新确认 Node.js 与 npm 版本。
 
 安装或升级 zvec-grep：
 
@@ -109,7 +140,16 @@ npm install --global @zvec/zvec-grep@latest
 zg --version
 ```
 
-遇到 npm 全局目录权限问题时，沿用当前 Node.js 版本管理器修复安装目录，避免引入 `sudo npm install`。
+Windows 原生 PowerShell 用 `npm.cmd` 和 `zg.cmd` 执行相同操作，避免命中受 PowerShell 执行策略限制的 `.ps1` 命令包装：
+
+```powershell
+npm.cmd install --global '@zvec/zvec-grep@latest'
+zg.cmd --version
+zg.cmd install --target codex --yes
+zg.cmd server status --check-ready
+```
+
+遇到 npm 全局目录权限问题时，沿用当前 Node.js 版本管理器修复安装目录。
 
 注册 Codex MCP：
 
@@ -117,6 +157,8 @@ zg --version
 zg install --target codex --yes
 zg server status --check-ready
 ```
+
+上面这组 `zg` 命令适用于 macOS、Linux 和 WSL。
 
 `zg install` 负责维护 Codex MCP 和 zvec-grep 的全局指导区块。发现同名的非托管 MCP 配置时，展示冲突内容并取得用户确认后再决定是否使用 `--force`。
 
@@ -127,6 +169,14 @@ zg server status --check-ready
 ```bash
 ./scripts/verify.sh
 ```
+
+Windows 原生 PowerShell：
+
+```powershell
+.\scripts\verify.ps1
+```
+
+如果 Windows 执行策略阻止仓库中的 `.ps1` 文件运行，先检查组织策略。个人设备可在用户确认后参考 [Microsoft 执行策略说明](https://learn.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy)选择合适的作用范围；保持限制时，由 AI 按本节逐项执行只读验证命令。
 
 所有项目均显示 `PASS` 后，提醒用户重启 Codex 或新建会话。
 
@@ -151,4 +201,4 @@ zg status
 
 ## 无人值守路径
 
-仓库根目录的 `install.sh` 只覆盖依赖已经满足的标准环境。它会在发现 Node.js 版本、PATH 或同名工具冲突时停止，复杂环境统一回到本文档的 AI 执行流程。
+仓库根目录提供 `install.sh`（macOS/Linux/WSL）和 `install.ps1`（Windows 原生）。两者只覆盖标准环境；发现版本、PATH 或同名工具冲突时，回到本文档的 AI 执行流程。

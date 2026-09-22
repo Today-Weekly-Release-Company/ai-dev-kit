@@ -53,6 +53,12 @@ else
   fail "全局 AGENTS.md 缺少 AI Dev Kit 托管区块"
 fi
 
+if [ -s "$CODEX_CONFIG_DIR/AGENTS.override.md" ]; then
+  fail "AGENTS.override.md 优先于全局 AGENTS.md，需确认规则生效方式"
+else
+  pass "全局 AGENTS.md 未被 override 文件遮蔽"
+fi
+
 if [ -f "$CONFIG_FILE" ] && grep -Eq '^\[mcp_servers\.zvec_grep\]' "$CONFIG_FILE"; then
   pass "Codex zvec_grep MCP 已注册"
 else
