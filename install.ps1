@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 
 if ([System.Environment]::OSVersion.Platform -ne [System.PlatformID]::Win32NT) {
     throw 'install.ps1 适用于 Windows 原生 PowerShell；macOS、Linux 和 WSL 请运行 install.sh。'

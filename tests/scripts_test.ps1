@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 
 $projectDir = Split-Path -Parent $PSScriptRoot
 $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("ai-dev-kit-test-{0}" -f [guid]::NewGuid().ToString('N'))

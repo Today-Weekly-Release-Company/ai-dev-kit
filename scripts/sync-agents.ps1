@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 
 $projectDir = Split-Path -Parent $PSScriptRoot
 $templatePath = Join-Path $projectDir 'templates/AGENTS.md'
